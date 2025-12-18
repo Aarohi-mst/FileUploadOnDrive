@@ -3,6 +3,9 @@ import multer from "multer"; //upload files handler (middleware)
 import pkg from "googleapis"; //google drive api client
 const { google } = pkg;
 import fs from "fs"; //file system in-built in node
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
@@ -12,7 +15,7 @@ const upload = multer({ dest: "uploads/" }); //folder to store uploaded files te
 console.log("1");
 const auth = new google.auth.GoogleAuth({
   //creates google authentication object
-  keyFile: "service-account.json", //path to credential file downloaded from Google Cloud Console
+  keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS, //path to credential file downloaded from Google Cloud Console
   scopes: ["https://www.googleapis.com/auth/drive.file"], //defines permissions like: Can create, upload, and modify filesthat this app creates in Google Drive
 });
 const drive = google.drive({ version: "v3", auth }); //creates google drive api client
