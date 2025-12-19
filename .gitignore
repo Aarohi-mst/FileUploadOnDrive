@@ -29,6 +29,19 @@ service-account.json
 # uploads
 uploads/
 backend/uploads/
+<<<<<<< HEAD
 service-account.json
 .env
 
+=======
+
+# secrets
+service-account.json
+*.json
+
+# env
+.env
+
+
+
+>>>>>>> clean-main

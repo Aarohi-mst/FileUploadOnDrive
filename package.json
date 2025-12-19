@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "dotenv": "^17.2.3",
+>>>>>>> clean-main
     "express": "^5.2.1",
     "fs": "^0.0.1-security",
     "googleapis": "^169.0.0",
