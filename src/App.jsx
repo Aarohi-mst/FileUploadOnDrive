@@ -19,9 +19,7 @@ function App() {
       });
       const data = await res.json();
       alert("File uploaded successfully");
-      console.log(data);
     } catch (err) {
-      console.error("Error uploading file:", err);
       alert("Error uploading file");
     }
   };
