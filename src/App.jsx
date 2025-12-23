@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 function App() {
   const [file, setFile] = useState(null);
   const [files, setFiles] = useState([]);
   const [customName, setCustomName] = useState("");
   const [customNames, setCustomNames] = useState([]);
+
+  const singleFileRef = useRef(null);
+  const multipleFileRef = useRef(null);
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -33,6 +37,10 @@ function App() {
       alert("Error uploading file");
     }
     setFile(null);
+    setCustomName("");
+    if (singleFileRef.current) {
+      singleFileRef.current.value = "";
+    }
   };
 
   const uploadMultipleFiles = async () => {
@@ -57,6 +65,9 @@ function App() {
     }
     setFiles([]);
     setCustomNames([]);
+    if (multipleFileRef.current) {
+      multipleFileRef.current.value = "";
+    }
   };
 
   return (
@@ -68,6 +79,7 @@ function App() {
           type="file"
           id="fileUpload"
           placeholder="Upload your file"
+          ref={singleFileRef}
           onChange={(e) => handleFileChange(e)}
         />
         <br /> <br />
@@ -92,6 +104,7 @@ function App() {
           multiple
           id="fileUploadMultiple"
           placeholder="Upload your file"
+          ref={multipleFileRef}
           onChange={(e) => handleFilesChange(e)}
         />
         <br />
