@@ -1,133 +1,26 @@
-import { useState, useRef } from "react";
+import SingleFileUpload from "./singleFileUpload";
+import MultipleFileUpload from "./multipleFileUpload";
+import JsonFormatFileUpload from "./jsonFormatFileUpload";
 
 function App() {
-  const [file, setFile] = useState(null);
-  const [files, setFiles] = useState([]);
-  const [customName, setCustomName] = useState("");
-  const [customNames, setCustomNames] = useState([]);
-
-  const singleFileRef = useRef(null);
-  const multipleFileRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-  const handleFilesChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    setFiles(selectedFiles);
-    setCustomNames(selectedFiles.map(() => ""));
-  };
-
-  const uploadFile = async () => {
-    if (!file) {
-      alert("Please select a file");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("customName", customName);
-    try {
-      const res = await fetch("http://localhost:3000/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      alert("File uploaded successfully");
-    } catch (err) {
-      alert("Error uploading file");
-    }
-    setFile(null);
-    setCustomName("");
-    if (singleFileRef.current) {
-      singleFileRef.current.value = "";
-    }
-  };
-
-  const uploadMultipleFiles = async () => {
-    if (!files || files.length === 0) {
-      alert("Please select a file");
-      return;
-    }
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
-    }
-    formData.append("customNames", JSON.stringify(customNames));
-    try {
-      const res = await fetch("http://localhost:3000/upload-multiple", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      alert("Files uploaded successfully");
-    } catch (err) {
-      alert("Error uploading files");
-    }
-    setFiles([]);
-    setCustomNames([]);
-    if (multipleFileRef.current) {
-      multipleFileRef.current.value = "";
-    }
-  };
-
   return (
     <div>
+      <h1>File Upload Platform</h1>
       <p>
-        <label htmlFor="fileUpload">Upload File:</label>
-        <br /> <br />
-        <input
-          type="file"
-          id="fileUpload"
-          placeholder="Upload your file"
-          ref={singleFileRef}
-          onChange={(e) => handleFileChange(e)}
-        />
-        <br /> <br />
-        <input
-          type="text"
-          value={customName}
-          placeholder="Enter file name"
-          onChange={(e) => setCustomName(e.target.value)}
-        />
-        <br />
+        <h3>Uplaod single file</h3>
+        <SingleFileUpload />
       </p>
       <br />
-      <button type="submit" onClick={uploadFile}>
-        Submit single file
-      </button>
-
       <p>
-        <label htmlFor="fileUpload">Upload Multiple File:</label>
-        <br /> <br />
-        <input
-          type="file"
-          multiple
-          id="fileUploadMultiple"
-          placeholder="Upload your file"
-          ref={multipleFileRef}
-          onChange={(e) => handleFilesChange(e)}
-        />
-        <br />
-        <br />
-        {files.map((_, i) => (
-          <div key={i}>
-            <input
-              type="text"
-              placeholder={`Custom name for the file ${i + 1}`}
-              value={customNames[i]}
-              onChange={(e) => {
-                const updated = [...customNames];
-                updated[i] = e.target.value;
-                setCustomNames(updated);
-              }}
-            />
-          </div>
-        ))}
-        <br />
+        <h3>Upload multiple files</h3>
+        <MultipleFileUpload />
       </p>
-      <button type="submit" onClick={uploadMultipleFiles}>
-        Submit multiple files
-      </button>
+      <br />
+      <p>
+        <h3>Upload files in JSON format folder structure</h3>
+        <JsonFormatFileUpload />
+      </p>
+      <br />
     </div>
   );
 }

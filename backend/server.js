@@ -19,6 +19,20 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/drive.file"], //defines permissions like: Can create, upload, and modify filesthat this app creates in Google Drive
 });
 const drive = google.drive({ version: "v3", auth }); //creates google drive api client
+
+async function createFolder(name, parentId = null) {
+  const res = await drive.files.create({
+    requestBody: {
+      name,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: parentId ? [parentId] : [],
+    },
+    supportsAllDrives: true,
+  });
+
+  return res.data.id;
+}
+
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const customName = req.body.customName;
@@ -77,6 +91,48 @@ app.post("/upload-multiple", upload.array("files", 10), async (req, res) => {
   } catch (error) {
     console.error("Error uploading file to Google Drive:", error);
     res.status(500).send(error.message);
+  }
+});
+
+app.post("/upload-dynamic", upload.array("files", 50), async (req, res) => {
+  try {
+    const structure = JSON.parse(req.body.structure);
+    const files = req.files;
+
+    const ROOT_FOLDER_ID = "0AKOQKBgucs4WUk9PVA";
+
+    for (const sidBlock of structure) {
+      const sidFolder = await createFolder(
+        `sid-${sidBlock.sid}`,
+        ROOT_FOLDER_ID
+      );
+
+      for (const stage of sidBlock.stages) {
+        const stageFolder = await createFolder(stage.name, sidFolder);
+
+        for (const fileIndex of stage.files) {
+          const file = files[fileIndex];
+
+          await drive.files.create({
+            requestBody: {
+              name: file.originalname,
+              parents: [stageFolder],
+            },
+            media: {
+              mimeType: file.mimetype,
+              body: fs.createReadStream(file.path),
+            },
+            supportsAllDrives: true,
+          });
+        }
+      }
+    }
+
+    files.forEach((f) => fs.unlinkSync(f.path));
+    res.json({ message: "Dynamic upload complete" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Upload failed");
   }
 });
 
