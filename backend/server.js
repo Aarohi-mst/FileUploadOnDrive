@@ -103,7 +103,9 @@ app.post("/upload-dynamic", upload.array("files", 50), async (req, res) => {
 
     for (const sidBlock of structure) {
       const sidFolder = await createFolder(
-        `sid-${sidBlock.sid}`,
+        sidBlock.name && sidBlock.name.trim()
+          ? sidBlock.name
+          : `sid-${sidBlock.sid}`,
         ROOT_FOLDER_ID
       );
 

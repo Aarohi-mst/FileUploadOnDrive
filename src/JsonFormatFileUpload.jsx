@@ -6,7 +6,15 @@ function JsonFormatFileUpload() {
   const dynamicFileRef = useRef(null);
 
   const addSid = () => {
-    setStructure([...structure, { sid: Date.now().toString(), stages: [] }]);
+    const sid = Date.now().toString();
+    setStructure((prev) => [
+      ...prev,
+      {
+        sid,
+        name: `sid-${sid}`,
+        stages: [],
+      },
+    ]);
   };
 
   const addStage = (sidIndex) => {
@@ -21,14 +29,25 @@ function JsonFormatFileUpload() {
 
   const toggleFile = (sidIndex, stageIndex, fileIndex) => {
     const copy = [...structure];
-    const list = copy[sidIndex].stages[stageIndex].files;
-    const idx = list.indexOf(fileIndex);
+    const fileList = copy[sidIndex].stages[stageIndex].files;
 
-    idx >= 0 ? list.splice(idx, 1) : list.push(fileIndex);
+    if (fileList.includes(fileIndex)) {
+      copy[sidIndex].stages[stageIndex].files = fileList.filter(
+        (i) => i !== fileIndex
+      );
+    } else {
+      fileList.push(fileIndex);
+    }
+
     setStructure(copy);
   };
 
   const upload = async () => {
+    if (!files.length || !structure.length) {
+      alert("Select files and create folders first");
+      return;
+    }
+
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
     formData.append("structure", JSON.stringify(structure));
@@ -56,18 +75,31 @@ function JsonFormatFileUpload() {
       />
       <br />
       <br />
+
       <button onClick={addSid}>Add Folder</button>
 
       {structure.map((sid, si) => (
-        <div key={sid.sid}>
-          <h3>Folder</h3>
+        <div key={sid.sid} style={{ border: "1px solid #ccc", padding: 10 }}>
+          {/* -------- TOP FOLDER NAME -------- */}
+          <input
+            type="text"
+            placeholder={sid.name}
+            value={sid.name}
+            onChange={(e) => {
+              const copy = [...structure];
+              copy[si].name = e.target.value || `sid-${copy[si].sid}`;
+              setStructure(copy);
+            }}
+          />
+
           <button onClick={() => addStage(si)}>Add Subfolder</button>
 
           {sid.stages.map((stage, ti) => (
-            <div key={ti}>
+            <div key={ti} style={{ marginLeft: 20 }}>
+              {/* -------- SUBFOLDER NAME -------- */}
               <input
                 placeholder="Subfolder name"
-                ref={dynamicFileRef}
+                value={stage.name}
                 onChange={(e) => {
                   const copy = [...structure];
                   copy[si].stages[ti].name = e.target.value;
@@ -75,21 +107,23 @@ function JsonFormatFileUpload() {
                 }}
               />
 
-              {files.map((f, fi) => (
-                <label key={fi}>
-                  <input
-                    type="checkbox"
-                    ref={dynamicFileRef}
-                    onChange={() => toggleFile(si, ti, fi)}
-                  />
-                  {f.name}
-                </label>
-              ))}
+              <div>
+                {files.map((f, fi) => (
+                  <label key={fi} style={{ display: "block" }}>
+                    <input
+                      type="checkbox"
+                      checked={stage.files.includes(fi)}
+                      onChange={() => toggleFile(si, ti, fi)}
+                    />
+                    {f.name}
+                  </label>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       ))}
-      <br />
+
       <br />
       <button onClick={upload}>Upload</button>
     </div>
